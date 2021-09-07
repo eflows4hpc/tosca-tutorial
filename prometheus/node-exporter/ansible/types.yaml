@@ -2,12 +2,13 @@ tosca_definitions_version: alien_dsl_3_0_0
 
 metadata:
   template_name: prometheus.node-exporter.ansible
-  template_version: 1.0.0-SNAPSHOT
+  template_version: 2.0.0-SNAPSHOT
   template_author: loicalbertin
 
 imports:
   - tosca-normative-types:1.0.0-ALIEN20
   - yorc-types:1.1.0
+  - prometheus.pub:2.0.0-SNAPSHOT
 
 node_types:
   prometheus.node-exporter.ansible.nodes.NodeExporter:
@@ -33,6 +34,8 @@ node_types:
         required: false
         default: "344bd4c0bbd66ff78f14486ec48b89c248139cdd485e992583ea30e89e0e5390"
 
+    capabilities:
+      metrics_endpoint: prometheus.pub.capabilities.MonitoringEndpoint
 
     interfaces:
       Standard:
@@ -43,6 +46,11 @@ node_types:
             node_exporter_checksum: {get_property: [SELF, checksum]}
           implementation: playbooks/create.yaml
 
+        configure:
+          inputs:
+            web_port: {get_property: [SELF, metrics_endpoint, port]}
+            metrics_path: {get_property: [SELF, metrics_endpoint, url_path]}
+          implementation: playbooks/configure.yaml
         start: playbooks/start.yaml
 
         stop: playbooks/stop.yaml

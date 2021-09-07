@@ -1,0 +1,17 @@
+- name: Install node_exporter
+  hosts: all
+  strategy: free
+  tasks:
+
+    - name: Compute Listen Address
+      set_fact:
+        listen_address: ":{{ web_port | default('9100') }}"
+
+    - name: Generate sysconfig file
+      become: yes
+      template:
+        src: "sysconfig.node_exporter.j2"
+        dest: "/etc/sysconfig/node_exporter"
+        mode: '0644'
+        owner: "root"
+        group: "root"
