@@ -1,0 +1,5 @@
+- name: Reload Prometheus config
+  hosts: all
+  become: yes
+  tasks:
+    - import_tasks: "prometheus_reload_tasks.yaml"

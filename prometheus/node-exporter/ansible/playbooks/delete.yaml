@@ -1,0 +1,29 @@
+- name: Install node_exporter
+  hosts: all
+  strategy: free
+  become: yes
+  tasks:
+    - name: delete node_exporter files
+      file:
+        path: "{{ item }}"
+        state: absent
+      loop:
+        - "/var/lib/node_exporter/"
+        - "/etc/sysconfig/node_exporter"
+        - "/usr/local/bin/node_exporter"
+        - "/etc/systemd/system/node_exporter.service"
+
+    - name: reload systemd
+      systemd:
+        daemon-reload: yes
+
+    - name: Delete the node_exporter user
+      user:
+        name: "node_exporter"
+        state: absent
+        remove: yes
+
+    - name: Delete the node_exporter group
+      group:
+        name: "node_exporter"
+        state: absent

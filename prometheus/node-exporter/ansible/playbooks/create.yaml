@@ -1,0 +1,107 @@
+- name: Install node_exporter
+  hosts: all
+  strategy: free
+  tasks:
+    - name: Create the node_exporter group
+      become: yes
+      group:
+        name: "node_exporter"
+        state: present
+        system: true
+
+    - name: Create the node_exporter user
+      become: yes
+      user:
+        name: "node_exporter"
+        groups: "node_exporter"
+        append: true
+        shell: /usr/sbin/nologin
+        system: true
+        create_home: false
+        home: /
+
+    - name: create temporary directory
+      file:
+        path: "/tmp/node_exporter/"
+        state: directory
+        mode: "0755"
+
+    - name: download node_exporter
+      get_url:
+        url: "{{ node_exporter_download_url }}"
+        dest: "/tmp/node_exporter/node_exporter.tar.gz"
+        checksum: "sha256:{{ node_exporter_checksum }}"
+        mode: '0644'
+
+    - name: unpack node_exporter
+      unarchive:
+        src: "/tmp/node_exporter/node_exporter.tar.gz"
+        dest: "/tmp/node_exporter/"
+        remote_src: yes
+
+    - name: find binary
+      find:
+        paths: "/tmp/node_exporter/"
+        patterns: [ "node_exporter" ]
+        recurse: yes
+      register: node_exporter_bin
+
+    - name: copy binary to /usr/local/bin
+      become: yes
+      copy:
+        src: "{{ node_exporter_bin.files[0].path }}"
+        dest: "/usr/local/bin/node_exporter"
+        remote_src: yes
+        mode: '0755'
+        owner: "root"
+        group: "root"
+
+
+    - name: copy systemd config
+      become: yes
+      copy:
+        src: "node_exporter.service"
+        dest: "/etc/systemd/system/node_exporter.service"
+        mode: '0644'
+        owner: "root"
+        group: "root"
+
+
+    - name: create /etc/sysconfig directory
+      become: yes
+      file:
+        path: "/etc/sysconfig"
+        state: directory
+        mode: "0755"
+        owner: "root"
+        group: "root"
+
+
+    - name: copy sysconfig file
+      become: yes
+      copy:
+        src: "sysconfig.node_exporter"
+        dest: "/etc/sysconfig/node_exporter"
+        mode: '0644'
+        owner: "root"
+        group: "root"
+
+
+    - name: create textfile_collector directory
+      become: yes
+      file:
+        path: /var/lib/node_exporter/textfile_collector
+        state: directory
+        mode: '0755'
+        owner: "node_exporter"
+        group: "node_exporter"
+
+    - name: reload systemd
+      become: yes
+      systemd:
+        daemon-reload: yes
+
+    - name: delete temporary files
+      file:
+        path: "/tmp/node_exporter/"
+        state: absent

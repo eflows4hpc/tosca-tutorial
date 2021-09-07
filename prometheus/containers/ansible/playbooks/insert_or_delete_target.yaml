@@ -1,0 +1,10 @@
+- name: Manage Prometheus Targets config
+  hosts: all
+  become: yes
+  tasks:
+    - name: Set prometheus target from inputs
+      set_fact:
+        prometheus_target: "{{ prometheus_target_input }}"
+      when:
+        - prometheus_target_input | default('') | length > 0
+    - import_tasks: "insert_or_delete_target_tasks.yaml"

@@ -1,0 +1,20 @@
+- name: Checks
+  assert:
+    fail_msg: "missing required prometheus target"
+    that:
+      - prometheus_target | default('') | length > 0
+
+- name: Insert target to config file
+  lineinfile:
+    path: "{{ prometheus_configuration_dir }}/prometheus.yml"
+    line: "        - \"{{ prometheus_target }}\""
+    insertafter: "# targets placeholder"
+    state: present
+  when: insert_target | bool
+
+- name: Delete target from config file
+  lineinfile:
+    path: "{{ prometheus_configuration_dir }}/prometheus.yml"
+    line: "        - \"{{ prometheus_target }}\""
+    state: absent
+  when: not (insert_target | bool)

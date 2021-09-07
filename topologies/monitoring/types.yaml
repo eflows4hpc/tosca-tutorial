@@ -1,0 +1,181 @@
+tosca_definitions_version: alien_dsl_3_0_0
+
+metadata:
+  template_name: demo.tosca.monitoring
+  template_version: 1.0.0-SNAPSHOT
+  template_author: loicalbertin
+
+description: ""
+
+imports:
+  - yorc-types:1.1.0
+  - tosca-normative-types:1.0.0-ALIEN20
+  - prometheus.containers.ansible:1.0.0-SNAPSHOT
+  - org.ystia.docker.ansible:3.0.0-SNAPSHOT
+  - stress.job.noscheduler:1.0.0-SNAPSHOT
+  - docker-types:3.0.0
+  - org.ystia.docker.containers.docker.generic:3.0.0-SNAPSHOT
+  - alien-base-types:3.0.0
+  - org.ystia.yorc.samples.job.noscheduler.Components:1.0.0-SNAPSHOT
+  - grafana.containers.ansible:1.0.0-SNAPSHOT
+  - prometheus.node-exporter.ansible:1.0.0-SNAPSHOT
+
+topology_template:
+  inputs:
+    download_url:
+      type: string
+      required: false
+      default: "https://github.com/prometheus/node_exporter/releases/download/v1.2.2/node_exporter-1.2.2.linux-amd64.tar.gz"
+      description: "The URL to download the node exporter binary distribution."
+  node_templates:
+    Docker:
+      type: org.ystia.docker.ansible.nodes.Docker
+      properties:
+        docker_version: ""
+      requirements:
+        - hostedOnComputeHost:
+            type_requirement: host
+            node: ComputeProm
+            capability: tosca.capabilities.Container
+            relationship: tosca.relationships.HostedOn
+    ComputeProm:
+      metadata:
+        a4c_edit_x: "-128"
+        a4c_edit_y: "-58"
+      type: tosca.nodes.Compute
+      capabilities:
+        scalable:
+          properties:
+            min_instances: 1
+            max_instances: 1
+            default_instances: 1
+        endpoint:
+          properties:
+            secure: true
+            protocol: tcp
+            network_name: PRIVATE
+            initiator: source
+    ComputeNode:
+      metadata:
+        a4c_edit_x: 150
+        a4c_edit_y: "-54"
+      type: tosca.nodes.Compute
+      capabilities:
+        scalable:
+          properties:
+            min_instances: 1
+            max_instances: 1
+            default_instances: 1
+        endpoint:
+          properties:
+            secure: true
+            protocol: tcp
+            network_name: PRIVATE
+            initiator: source
+    NodeExporter:
+      type: prometheus.node-exporter.ansible.nodes.NodeExporter
+      properties:
+        component_version: "1.2.2"
+        download_url: { get_input: download_url }
+        checksum: 344bd4c0bbd66ff78f14486ec48b89c248139cdd485e992583ea30e89e0e5390
+      requirements:
+        - hostedOnComputeNodeHost:
+            type_requirement: host
+            node: ComputeNode
+            capability: tosca.capabilities.Container
+            relationship: tosca.relationships.HostedOn
+    Grafana:
+      type: grafana.containers.ansible.nodes.Grafana
+      properties:
+        image: "grafana/grafana:latest"
+        restart_policy: always
+        published_ports:
+          - "3000:3000"
+        auto_remove: false
+        cleanup: false
+        detach: true
+        keep_volumes: true
+        cpu_share: 1.0
+        mem_share: "128 MB"
+        docker_bash_cmd:
+          - "/bin/bash"
+          - "-c"
+      requirements:
+        - hostedOnContainerRuntimeDockerHost:
+            type_requirement: host
+            node: Docker
+            capability: org.alien4cloud.extended.container.capabilities.ApplicationHost
+            relationship: org.alien4cloud.extended.container.relationships.HostedOnContainerRuntime
+      capabilities:
+        scalable:
+          properties:
+            min_instances: 1
+            max_instances: 1
+            default_instances: 1
+    Prometheus:
+      type: prometheus.containers.ansible.nodes.Prometheus
+      properties:
+        image: "prom/prometheus:latest"
+        restart_policy: always
+        published_ports:
+          - "9090:9090"
+        configuration_dir: "/var/lib/prometheus/"
+        volumes:
+          - "/var/lib/prometheus/:/etc/prometheus/"
+        auto_remove: false
+        cleanup: false
+        detach: true
+        keep_volumes: true
+        cpu_share: 1.0
+        mem_share: "128 MB"
+        docker_bash_cmd:
+          - "/bin/bash"
+          - "-c"
+      requirements:
+        - hostedOnContainerRuntimeDockerHost:
+            type_requirement: host
+            node: Docker
+            capability: org.alien4cloud.extended.container.capabilities.ApplicationHost
+            relationship: org.alien4cloud.extended.container.relationships.HostedOnContainerRuntime
+      capabilities:
+        scalable:
+          properties:
+            min_instances: 1
+            max_instances: 1
+            default_instances: 1
+    StressJob:
+      type: stress.job.noscheduler.nodes.StressJob
+      properties:
+        command: "stress --cpu $(nproc) --io $(nproc) --vm $(nproc) --timeout 5m"
+      requirements:
+        - hostedOnComputeNodeHost:
+            type_requirement: host
+            node: ComputeNode
+            capability: tosca.capabilities.Container
+            relationship: tosca.relationships.HostedOn
+  outputs:
+    ComputeProm_private_address:
+      value: { get_attribute: [ ComputeProm, private_address ] }
+    ComputeProm_public_address:
+      value: { get_attribute: [ ComputeProm, public_address ] }
+    ComputeNode_private_address:
+      value: { get_attribute: [ ComputeNode, private_address ] }
+    ComputeNode_public_address:
+      value: { get_attribute: [ ComputeNode, public_address ] }
+  workflows:
+    AddPrometheusTarget:
+      inputs:
+        prometheus_target:
+          type: string
+          required: true
+      steps:
+        Prometheus_insert_target:
+          target: Prometheus
+          activities:
+            - call_operation: custom.insert_target
+          on_success:
+            - Prometheus_reload_config
+        Prometheus_reload_config:
+          target: Prometheus
+          activities:
+            - call_operation: custom.reload_config

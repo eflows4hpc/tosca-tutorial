@@ -1,0 +1,10 @@
+- name: Stop node_exporter
+  hosts: all
+  strategy: free
+  tasks:
+
+    - name: Stop node_exporter
+      become: yes
+      systemd:
+        name: node_exporter
+        state: stopped

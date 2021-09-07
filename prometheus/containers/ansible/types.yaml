@@ -1,0 +1,77 @@
+tosca_definitions_version: alien_dsl_3_0_0
+
+
+metadata:
+  template_name: prometheus.containers.ansible
+  template_version: 1.0.0-SNAPSHOT
+  template_author: loicalbertin
+
+
+
+imports:
+  - tosca-normative-types:1.0.0-ALIEN20
+  - org.ystia.docker.containers.docker.generic:3.0.0-SNAPSHOT
+
+node_types:
+  prometheus.containers.ansible.nodes.Prometheus:
+    derived_from: org.ystia.docker.containers.docker.generic.nodes.GenericContainer
+    metadata:
+      icon: prometheus-icon.png
+    properties:
+      image:
+        type: string
+        description: >
+          Repository path and tag used to create the container. If an image is not found,
+          the image will be pulled from the registry. If no tag is included, 'latest' will be used.
+        required: true
+        default: "prom/prometheus:latest"
+      restart_policy:
+        type: string
+        constraints:
+          - valid_values: ["no", "on-failure", "always", "unless-stopped"]
+        default: "always"
+      published_ports:
+        type: list
+        entry_schema:
+          type: string
+        description: |
+          List of ports to publish from the container to the host.
+          Use docker CLI syntax: 8000, 9000:8000, or 0.0.0.0:9000:8000, where 8000 is a container port, 9000 is a host port, and 0.0.0.0 is a host interface.
+          Container ports must be exposed either in the Dockerfile or via the expose option.
+          A value of all will publish all exposed container ports to random host ports, ignoring any other mappings.
+        required: false
+        default:
+          - "9090:9090"
+      configuration_dir:
+        type: string
+        description: |
+          Path to a directory containing Prometheus configuration files on host.
+        default: "/var/lib/prometheus/"
+      volumes:
+        type: list
+        entry_schema:
+          type: string
+        description: |
+          List of volumes to mount within the container.
+          Use docker CLI-style syntax: /host:/container[:mode]
+          You can specify a read mode for the mount with either ro or rw.
+          SELinux hosts can additionally use z or Z to use a shared or private label for the volume.
+        required: false
+        default: [ "/var/lib/prometheus/:/etc/prometheus/" ]
+    interfaces:
+      Standard:
+        configure:
+          inputs:
+            prometheus_configuration_dir: { get_property: [SELF, configuration_dir] }
+          implementation: playbooks/configure.yaml
+      custom:
+        reload_config:
+          inputs:
+            CONTAINER_ID: { get_attribute: [SELF, container_id] }
+          implementation: playbooks/reload_config.yaml
+        insert_target:
+          inputs:
+            prometheus_configuration_dir: { get_property: [SELF, configuration_dir] }
+            insert_target: "True"
+            prometheus_target_input: { get_input: prometheus_target }
+          implementation: playbooks/insert_or_delete_target.yaml

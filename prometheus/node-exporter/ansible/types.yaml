@@ -1,0 +1,50 @@
+tosca_definitions_version: alien_dsl_3_0_0
+
+metadata:
+  template_name: prometheus.node-exporter.ansible
+  template_version: 1.0.0-SNAPSHOT
+  template_author: loicalbertin
+
+imports:
+  - tosca-normative-types:1.0.0-ALIEN20
+  - yorc-types:1.1.0
+
+node_types:
+  prometheus.node-exporter.ansible.nodes.NodeExporter:
+    derived_from: tosca.nodes.SoftwareComponent
+    metadata:
+      icon: /node-exporter-icon.png
+    properties:
+      component_version:
+        type: version
+        description: The node exporter version.
+        required: true
+        default: 1.2.2
+
+      download_url:
+        type: string
+        description: The URL to download the node exporter binary distribution.
+        required: false
+        default: "https://github.com/prometheus/node_exporter/releases/download/v1.2.2/node_exporter-1.2.2.linux-amd64.tar.gz"
+
+      checksum:
+        type: string
+        description: The checksum of the node exporter binary distribution.
+        required: false
+        default: "344bd4c0bbd66ff78f14486ec48b89c248139cdd485e992583ea30e89e0e5390"
+
+
+    interfaces:
+      Standard:
+        create:
+          inputs:
+            node_exporter_version: {get_property: [SELF, component_version]}
+            node_exporter_download_url: {get_property: [SELF, download_url]}
+            node_exporter_checksum: {get_property: [SELF, checksum]}
+          implementation: playbooks/create.yaml
+
+        start: playbooks/start.yaml
+
+        stop: playbooks/stop.yaml
+
+        delete: playbooks/delete.yaml

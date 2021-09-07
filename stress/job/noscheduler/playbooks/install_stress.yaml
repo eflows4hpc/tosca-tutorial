@@ -1,0 +1,30 @@
+- name: Install Stress
+  hosts: all
+  strategy: free
+  become: yes
+  tasks:
+    - name: Install stress with apt
+      apt:
+        name: stress
+        update_cache: yes
+        state: present
+      register: apt_res
+      retries: 5
+      delay: 15
+      until: apt_res is success
+      when:
+        - ansible_os_family == 'Debian'
+
+    - name: Install epel repository
+      dnf:
+        name: epel-release
+        state: present
+      when:
+        - ansible_os_family == 'RedHat'
+
+    - name: Install stress with dnf
+      dnf:
+        name: stress
+        state: present
+      when:
+        - ansible_os_family == 'RedHat'

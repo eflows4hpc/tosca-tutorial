@@ -1,0 +1,30 @@
+tosca_definitions_version: alien_dsl_3_0_0
+
+
+metadata:
+  template_name: stress.job.noscheduler
+  template_version: 1.0.0-SNAPSHOT
+  template_author: loicalbertin
+
+
+
+imports:
+  - tosca-normative-types:1.0.0-ALIEN20
+  - org.ystia.docker.containers.docker.generic:3.0.0-SNAPSHOT
+  - org.ystia.yorc.samples.job.noscheduler.Components:1.0.0-SNAPSHOT
+
+
+node_types:
+  stress.job.noscheduler.nodes.StressJob:
+    derived_from: org.ystia.yorc.samples.job.noscheduler.SpawnJob
+    metadata:
+      icon: /stress-icon.png
+    properties:
+      command:
+        type: string
+        required: true
+        default: "stress --cpu $(nproc) --io $(nproc) --vm $(nproc) --hdd $(nproc) --timeout 5m"
+    interfaces:
+      Standard:
+        create:
+          implementation: "playbooks/install_stress.yaml"
