@@ -3,7 +3,7 @@ tosca_definitions_version: alien_dsl_3_0_0
 
 metadata:
   template_name: prometheus.containers.ansible
-  template_version: 1.0.0-SNAPSHOT
+  template_version: 2.0.0-SNAPSHOT
   template_author: loicalbertin
 
 
@@ -11,6 +11,7 @@ metadata:
 imports:
   - tosca-normative-types:1.0.0-ALIEN20
   - org.ystia.docker.containers.docker.generic:3.0.0-SNAPSHOT
+  - prometheus.pub:2.0.0-SNAPSHOT
 
 node_types:
   prometheus.containers.ansible.nodes.Prometheus:
@@ -58,6 +59,11 @@ node_types:
           SELinux hosts can additionally use z or Z to use a shared or private label for the volume.
         required: false
         default: [ "/var/lib/prometheus/:/etc/prometheus/" ]
+    requirements:
+      - targets:
+          capability: prometheus.pub.capabilities.MonitoringEndpoint
+          relationship: prometheus.containers.ansible.relationships.TargetsTo
+          occurrences: [0, UNBOUNDED]
     interfaces:
       Standard:
         configure:
@@ -75,3 +81,20 @@ node_types:
             insert_target: "True"
             prometheus_target_input: { get_input: prometheus_target }
           implementation: playbooks/insert_or_delete_target.yaml
+
+relationship_types:
+  prometheus.containers.ansible.relationships.TargetsTo:
+    derived_from: tosca.relationships.ConnectsTo
+    interfaces:
+      Configure:
+        inputs:
+          prometheus_configuration_dir: { get_property: [SOURCE, configuration_dir] }
+          prometheus_target: { concat: [ get_attribute: [TARGET, metrics_endpoint, ip_address], ":", get_property: [TARGET, metrics_endpoint, port]] }
+        add_target:
+          inputs:
+            insert_target: "True"
+          implementation: playbooks/insert_or_delete_target_and_reload.yaml
+        remove_target:
+          inputs:
+            insert_target: "False"
+          implementation: playbooks/insert_or_delete_target_and_reload.yaml

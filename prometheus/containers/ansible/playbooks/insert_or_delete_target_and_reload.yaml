@@ -1,0 +1,21 @@
+- name: Manage Prometheus Targets config
+  hosts: all
+  become: yes
+  tasks:
+    - name: Set prometheus target from inputs
+      set_fact:
+        prometheus_target: "{{ prometheus_target_input }}"
+      when:
+        - prometheus_target_input | default('') | length > 0
+
+    - import_tasks: "insert_or_delete_target_tasks.yaml"
+
+    - name: set NODE to SOURCE_NODE for relationship operations
+      set_fact:
+        NODE: "{{ SOURCE_NODE }}"
+        INSTANCE: "{{ SOURCE_INSTANCE }}"
+      when:
+        - NODE | default('') | length == 0
+        - SOURCE_NODE | default('') | length > 0
+
+    - import_tasks: "prometheus_reload_tasks.yaml"
