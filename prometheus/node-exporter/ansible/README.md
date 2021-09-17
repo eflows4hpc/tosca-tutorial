@@ -59,4 +59,4 @@ handle playbooks we will not use roles.
 ## Next steps
 
 Then let's see how to inherit from an existing TOSCA component that manages docker containers to deploy
-a [Grafana server](../../../grafana/containers/ansible/README.md)] by simply defining some new properties.
+a [Grafana server](../../../grafana/containers/ansible/README.md) by simply defining some new properties.
