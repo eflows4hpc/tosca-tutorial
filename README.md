@@ -35,7 +35,7 @@ This tutorial is designed to be read in the following order:
 
 1. We will see the basic of modeling a TOSCA component with the [Prometheus Node Exporter](prometheus/node-exporter/ansible/README.md)
 2. Then we will see how to inherit from an existing TOSCA component that manages docker containers to deploy
-   a [Grafana server](grafana/containers/ansible/README.md)] by simply defining some new properties.
+   a [Grafana server](grafana/containers/ansible/README.md) by simply defining some new properties.
 3. A slightly more advanced scenario will be used to deploy a [Prometheus server](prometheus/containers/ansible/README.md) as a container just like Grafana, but with some extra configuration steps and we will also introduce the concept of *custom commands*
 4. The [stress component](stress/job/noscheduler/README.md) will introduce the concept of *jobs scheduling* but will reuse an existing component to keep this as simple as possible.
 5. Last but not least we will introduce the concept of TOSCA [Topologies templates](topologies/monitoring/README.md) that allows to define a template of an application that could be instantiated into new applications.
