@@ -6,10 +6,10 @@ This repository contains material for the TOSCA tutorial.
 
 This repository is organized in the following way:
 
-* the `main` branch is the default one. The one you are reading right now.
+* the [`main`](https://github.com/loicalbertin/tosca-tutorial/tree/main) branch is the default one.
   It contains the first part of the tutorial that will introduce basic concepts of how to use TOSCA while still
   being able to run an end-to-end demo.
-* the [`advanced`](https://github.com/loicalbertin/tosca-tutorial/tree/advanced) branch contains the second part of the tutorial. It contains the advanced concepts that will allow to reduce manual work by automating configuration of nodes using **TOSCA relationships**.
+* the `advanced` branch - the one you are reading right now - contains the second part of the tutorial. It contains the advanced concepts that will allow to reduce manual work by automating configuration of nodes using **TOSCA relationships**.
 
 ## Getting started
 
@@ -31,13 +31,11 @@ This system will be composed of the following components:
 
 ### Tutorial walkthrough
 
-This tutorial is designed to be read in the following order:
+Compared to the `main` branch the `advanced` branch brings the following improvements:
 
-1. We will see the basic of modeling a TOSCA component with the [Prometheus Node Exporter](prometheus/node-exporter/ansible/README.md)
-2. Then we will see how to inherit from an existing TOSCA component that manages docker containers to deploy
-   a [Grafana server](grafana/containers/ansible/README.md) by simply defining some new properties.
-3. A slightly more advanced scenario will be used to deploy a [Prometheus server](prometheus/containers/ansible/README.md) as a container just like Grafana, but with some extra configuration steps and we will also introduce the concept of *custom commands*
-4. The [stress component](stress/job/noscheduler/README.md) will introduce the concept of *jobs scheduling* but will reuse an existing component to keep this as simple as possible.
-5. Last but not least we will introduce the concept of TOSCA [Topologies templates](topologies/monitoring/README.md) that allows to define a template of an application that could be instantiated into new applications.
-
-Once you have read all the above, you can switch to the [advanced tutorial](https://github.com/loicalbertin/tosca-tutorial/blob/advanced/README.md).
+1. A new `prometheus.pub.capabilities.MonitoringEndpoint` is defined in the [Prometheus public types component](prometheus/pub/README.md) and serve as an interface between Prometheus and the monitored systems.
+2. The [Prometheus Node Exporter](prometheus/node-exporter/ansible/README.md) component has been refactored to
+   integrate this new capability.
+3. The [Prometheus server](prometheus/containers/ansible/README.md) ships a new requirement and a new relationship
+   in order to automatically connect Prometheus to the node exporter
+4. Finally the [Topology template](topologies/monitoring/README.md) has been updated to reflect these changes
