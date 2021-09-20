@@ -2,7 +2,7 @@ tosca_definitions_version: alien_dsl_3_0_0
 
 metadata:
   template_name: demo.tosca.monitoring
-  template_version: 1.0.0-SNAPSHOT
+  template_version: 2.0.0-SNAPSHOT
   template_author: loicalbertin
 
 description: ""
@@ -10,15 +10,16 @@ description: ""
 imports:
   - yorc-types:1.1.0
   - tosca-normative-types:1.0.0-ALIEN20
-  - prometheus.containers.ansible:1.0.0-SNAPSHOT
+  - prometheus.containers.ansible:2.0.0-SNAPSHOT
   - org.ystia.docker.ansible:3.0.0-SNAPSHOT
   - stress.job.noscheduler:1.0.0-SNAPSHOT
   - docker-types:3.0.0
   - org.ystia.docker.containers.docker.generic:3.0.0-SNAPSHOT
   - alien-base-types:3.0.0
   - org.ystia.yorc.samples.job.noscheduler.Components:1.0.0-SNAPSHOT
+  - prometheus.pub:2.0.0-SNAPSHOT
   - grafana.containers.ansible:1.0.0-SNAPSHOT
-  - prometheus.node-exporter.ansible:1.0.0-SNAPSHOT
+  - prometheus.node-exporter.ansible:2.0.0-SNAPSHOT
 
 topology_template:
   inputs:
@@ -84,6 +85,15 @@ topology_template:
             node: ComputeNode
             capability: tosca.capabilities.Container
             relationship: tosca.relationships.HostedOn
+      capabilities:
+        metrics_endpoint:
+          properties:
+            protocol: http
+            port: 9100
+            url_path: "/metrics"
+            secure: false
+            network_name: PRIVATE
+            initiator: source
     Grafana:
       type: grafana.containers.ansible.nodes.Grafana
       properties:
@@ -137,6 +147,11 @@ topology_template:
             node: Docker
             capability: org.alien4cloud.extended.container.capabilities.ApplicationHost
             relationship: org.alien4cloud.extended.container.relationships.HostedOnContainerRuntime
+        - targetsToNodeExporterMetrics_endpoint:
+            type_requirement: targets
+            node: NodeExporter
+            capability: prometheus.pub.capabilities.MonitoringEndpoint
+            relationship: prometheus.containers.ansible.relationships.TargetsTo
       capabilities:
         scalable:
           properties:
@@ -146,7 +161,7 @@ topology_template:
     StressJob:
       type: stress.job.noscheduler.nodes.StressJob
       properties:
-        command: "stress --cpu $(nproc) --io $(nproc) --vm $(nproc) --timeout 5m"
+        command: "stress --cpu $(nproc) --io $(nproc) --vm $(nproc) --hdd $(nproc) --timeout 5m"
       requirements:
         - hostedOnComputeNodeHost:
             type_requirement: host
