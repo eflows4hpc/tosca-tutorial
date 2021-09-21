@@ -9,7 +9,7 @@ This repository is organized in the following way:
 * the `main` branch is the default one. The one you are reading right now.
   It contains the first part of the tutorial that will introduce basic concepts of how to use TOSCA while still
   being able to run an end-to-end demo.
-* the [`advanced`](https://github.com/loicalbertin/tosca-tutorial/tree/advanced) branch contains the second part of the tutorial. It contains the advanced concepts that will allow to reduce manual work by automating configuration of nodes using **TOSCA relationships**.
+* the [`advanced`](https://github.com/eflows4hpc/tosca-tutorial/tree/advanced) branch contains the second part of the tutorial. It contains the advanced concepts that will allow to reduce manual work by automating configuration of nodes using **TOSCA relationships**.
 
 ## Getting started
 
@@ -40,4 +40,4 @@ This tutorial is designed to be read in the following order:
 4. The [stress component](stress/job/noscheduler/README.md) will introduce the concept of *jobs scheduling* but will reuse an existing component to keep this as simple as possible.
 5. Last but not least we will introduce the concept of TOSCA [Topologies templates](topologies/monitoring/README.md) that allows to define a template of an application that could be instantiated into new applications.
 
-Once you have read all the above, you can switch to the [advanced tutorial](https://github.com/loicalbertin/tosca-tutorial/blob/advanced/README.md).
+Once you have read all the above, you can switch to the [advanced tutorial](https://github.com/eflows4hpc/tosca-tutorial/blob/advanced/README.md).
