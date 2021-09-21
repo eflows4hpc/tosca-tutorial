@@ -38,4 +38,4 @@ Prometheus configuration.
 
 ## Next steps
 
-This conclude the first part of the tutorial. You can switch to the [advanced tutorial](https://github.com/loicalbertin/tosca-tutorial/blob/advanced/README.md).
+This conclude the first part of the tutorial. You can switch to the [advanced tutorial](https://github.com/eflows4hpc/tosca-tutorial/blob/advanced/README.md).

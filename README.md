@@ -6,7 +6,7 @@ This repository contains material for the TOSCA tutorial.
 
 This repository is organized in the following way:
 
-* the [`main`](https://github.com/loicalbertin/tosca-tutorial/tree/main) branch is the default one.
+* the [`main`](https://github.com/eflows4hpc/tosca-tutorial/tree/main) branch is the default one.
   It contains the first part of the tutorial that will introduce basic concepts of how to use TOSCA while still
   being able to run an end-to-end demo.
 * the `advanced` branch - the one you are reading right now - contains the second part of the tutorial. It contains the advanced concepts that will allow to reduce manual work by automating configuration of nodes using **TOSCA relationships**.
