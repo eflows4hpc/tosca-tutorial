@@ -27,4 +27,4 @@ So we redefine defaults for:
 ### Next steps
 
 Then let's see how to we can use this new capability on a node type for the
-[Prometheus Exporter](../node-exporter/ansible/README.md)].
+[Prometheus Exporter](../node-exporter/ansible/README.md).
